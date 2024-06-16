@@ -202,16 +202,36 @@ export default {
                     });
 
                     $(row).find('.fa-trash').on('click', () => {
-                        if (confirm('Bạn có chắc chắn muốn xóa giáo viên này không?')) {
-                            axios.delete(`https://localhost:7186/api/GiaoVien/${data.maGV}`)
-                                .then(response => {
-                                    vm.fetchData(response);
-                                    alert('Xóa giáo viên thành công!')
-                                })
-                                .catch(error => {
-                                    console.error('Error deleting teacher:', error);
-                                });
-                        }
+                        Swal.fire({
+                            title: 'Bạn có chắc chắn muốn xóa giáo viên này không?',
+                            text: "Bạn sẽ không thể khôi phục lại dữ liệu này!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Xóa',
+                            cancelButtonText: 'Hủy'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                axios.delete(`https://localhost:7186/api/GiaoVien/${data.maGV}`)
+                                    .then(response => {
+                                        vm.fetchData(response);
+                                        Swal.fire(
+                                            'Đã xóa!',
+                                            'Giáo viên đã được xóa thành công.',
+                                            'success'
+                                        );
+                                    })
+                                    .catch(error => {
+                                        console.error('Error deleting teacher:', error);
+                                        Swal.fire(
+                                            'Lỗi!',
+                                            'Đã xảy ra lỗi khi xóa giáo viên.',
+                                            'error'
+                                        );
+                                    });
+                            }
+                        });
                     });
                 }
             });

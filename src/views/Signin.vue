@@ -3,9 +3,7 @@
         <div class="container">
             <!-- Outer Row -->
             <div class="row justify-content-center">
-
                 <div class="col-xl-10 col-lg-12 col-md-9">
-
                     <div class="card o-hidden border-0 shadow-lg my-5">
                         <div class="card-body p-0">
                             <!-- Nested Row within Card Body -->
@@ -22,37 +20,20 @@
                                         <form class="user" @submit.prevent="login">
                                             <div class="form-group">
                                                 <input type="email" class="form-control form-control-user"
-                                                    v-model="email" placeholder="Enter Email Address...">
+                                                    v-model="email" placeholder="Enter Email Address..." required>
                                             </div>
                                             <div class="form-group">
                                                 <input type="password" class="form-control form-control-user"
-                                                    v-model="password" placeholder="Password">
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="custom-control custom-checkbox small">
-                                                    <input type="checkbox" class="custom-control-input"
-                                                        id="customCheck">
-                                                    <label class="custom-control-label" for="customCheck">Remember
-                                                        Me</label>
-                                                </div>
+                                                    v-model="password" placeholder="Password" required>
                                             </div>
                                             <button type="submit" class="btn btn-primary btn-user btn-block">
                                                 Login
                                             </button>
                                             <hr>
-                                            <!-- <a href="index.html" class="btn btn-google btn-user btn-block">
-                                                <i class="fab fa-google fa-fw"></i> Login with Google
-                                            </a>
-                                            <a href="index.html" class="btn btn-facebook btn-user btn-block">
-                                                <i class="fab fa-facebook-f fa-fw"></i> Login with Facebook
-                                            </a> -->
                                         </form>
                                         <hr>
                                         <div class="text-center">
                                             <a class="small" href="forgot-password.html">Forgot Password?</a>
-                                        </div>
-                                        <div class="text-center">
-                                            <a class="small" href="register.html">Create an Account!</a>
                                         </div>
                                     </div>
                                 </div>
@@ -67,7 +48,8 @@
 
 <script>
 import axios from 'axios';
-import router from '@/router/index.js';
+import router from '@/router';
+
 export default {
     name: 'LoginComponent',
     data() {
@@ -77,42 +59,48 @@ export default {
         };
     },
     methods: {
-        login() {
+  generateToken(userType) {
+    let token;
+    if (userType === 'admin') {
+      token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNjEyMzQ1Njc4fQ.S6TqJbi0kT06yE7tUeoHbiq5epv1KXeoFw8jblg_C1g'; // Token admin
+    } else {
+      token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp1bWJlc2VyIiwiaWF0IjoxNjEyMzQ1Njc4fQ.kWzRA8w_J4J7QdAWFqHhQ10DqZGnCnS8U0Dgp4sFvhc'; // Token user
+    }
+    return token;
+  },
+  login() {
     const adminEmail = 'admin@gmail.com';
     const adminPassword = '123456';
 
     if (this.email === adminEmail && this.password === adminPassword) {
-        // Đăng nhập thành công với tư cách admin
-        window.isAuthenticated = true; // Đánh dấu đã xác thực, có thể sử dụng Vuex trong ứng dụng thực tế
-        this.$router.push('/thongke'); // Chuyển hướng đến trang thống kê
+      // Đăng nhập thành công với tư cách admin
+      const token = this.generateToken('admin');
+      localStorage.setItem('authToken', token);
+      this.$router.push('/thongke');
     } else {
-        // Đăng nhập với tư cách người dùng thông thường, gọi API để kiểm tra
-        axios.get(`https://localhost:7186/api/Login/login?taiKhoan=${this.email}&matKhau=${this.password}`)
-            .then(res => {
-                const login = res.data;
-                console.log(login);
-                if (this.email === login.taiKhoan && this.password === login.matKhau) {
-                    // Đăng nhập thành công với tài khoản người dùng
-                    // Chuyển hướng đến trang cá nhân của người dùng
-                    this.$router.push({ name: 'User.Home', params: { id: login.maHS } });
-                } else {
-                    // Xử lý trường hợp tài khoản hoặc mật khẩu không chính xác
-                    // Hiển thị thông báo lỗi cho người dùng
-                    console.error('Sai tài khoản hoặc mật khẩu');
-                }
-            })
-            .catch(error => {
-                // Xử lý lỗi, ví dụ: hiển thị thông báo lỗi cho người dùng
-                console.error('Đăng nhập thất bại:', error);
-            });
+      // Đăng nhập với tư cách người dùng thông thường, gọi API để kiểm tra
+      axios.get(`https://localhost:7186/api/Login/login?taiKhoan=${this.email}&matKhau=${this.password}`)
+        .then(res => {
+          const loginData = res.data;
+          console.log(loginData);
+          if (loginData) {
+            // Lưu token vào localStorage
+            const token = this.generateToken('user');
+            localStorage.setItem('authToken', token);
+
+            // Chuyển hướng người dùng đến trang người dùng tương ứng
+            this.$router.push({ name: 'User.Home', params: { id: loginData.maHS } });
+          } else {
+            alert('Sai tài khoản hoặc mật khẩu');
+          }
+        })
+        .catch(error => {
+          console.error('Đăng nhập thất bại', error);
+          alert('Đăng nhập thất bại, vui lòng thử lại.');
+        });
     }
+  },
 }
 
-
-    }
 };
 </script>
-
-<style scoped>
-/* Your CSS styles here */
-</style>

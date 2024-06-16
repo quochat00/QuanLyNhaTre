@@ -70,6 +70,7 @@
                                         <th>Số lượng học sinh</th>
                                         <th>Thời khóa biểu</th>
                                         <th>Chi tiết lớp học</th>
+                                        <th>Sửa</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -169,12 +170,18 @@ export default {
                                     <button class="fa fa-eye btn btn-outline-info btn-view-schedule"> Chi tiết </button>
                                 </div>`
                             },
+                            {
+                                defaultContent: `
+                                <div>
+                                    <button class="fa fa-edit btn btn-outline-danger"> Sửa </button>
+                                </div>`
+                            },
                         ],
                         createdRow: function (row, data) {
                             $(row).find('.fa-eye').on('click', function () {
                                 router.push({ name: 'Class.stofclass', params: { id: data.maLop } });
                             });
-                            $(row).find('.fa-pencil-square').on('click', function () {
+                            $(row).find('.fa-edit').on('click', function () {
                                 router.push({ name: 'Student.edit', params: { id: data.maHS } });
                             });
                             $(row).find('.fa-trash').on('click', () => {

@@ -58,7 +58,7 @@
                                             <div class="row no-gutters align-items-center">
                                                 <div class="col-auto">
                                                     <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{
-                                                totalClasses }}</div>
+                                                        totalClasses }}</div>
                                                 </div>
                                                 <div class="col">
                                                     <div class="progress progress-sm mr-2">
@@ -77,10 +77,37 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="card shadow mb-4">
+                        <div class="card shadow mb-4">
+                        <div class="card-body">
+                        <input type="text" v-model="thang" placeholder="Tháng">
+                        <input type="text" v-model="nam" placeholder="Năm">
+                        <button @click="fetchDataTK">Tìm kiếm</button>
+                        </div>
+                        <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                <th>Tên lớp</th>
+                                <th>Năm</th>
+                                <th>Tháng</th>
+                                <th>Số lượng học sinh nghỉ</th>
+                                <!-- <th>Chi tiết</th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            </table>
+                        </div>
+                        </div>
+                    </div>
+
                         <div class="card-header py-3">
                             <h6 class="m-0 font-weight-bold text-primary">Giới thiệu</h6>
                         </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="card-body text-center">
@@ -93,9 +120,12 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.121054054485!2d105.7982625758421!3d21.06782678643445!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135abf749cc5f29%3A0x6537faa7a42b9b94!2zVHLGsOG7nW5nIE3huqdtIE5vbiBLaXR0ZW4gMw!5e0!3m2!1svi!2s!4v1717411256452!5m2!1svi!2s" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.121054054485!2d105.7982625758421!3d21.06782678643445!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135abf749cc5f29%3A0x6537faa7a42b9b94!2zVHLGsOG7nW5nIE3huqdtIE5vbiBLaXR0ZW4gMw!5e0!3m2!1svi!2s!4v1717411256452!5m2!1svi!2s"
+                                    width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade"></iframe>
                                 <h6 style="text-align:center">Phố Minh Tảo, Xuân Tảo, Bắc Từ Niêm, Hà Nội</h6>
-                        </div>
+                            </div>
                         </div>
                     </div>
 
@@ -120,6 +150,7 @@ export default {
             classes: [],
             teachers: [],
             students: [],
+            thongkes: [],
             totalStudents: 0,
             totalTeachers: 0,
             totalClasses: 0,
@@ -130,8 +161,36 @@ export default {
         this.fetchData();
         this.fetchTeachers();
         this.fetchStudents();
+        this.fetchDataTK();
     },
     methods: {
+        fetchDataTK() {
+      axios.get(`https://localhost:7186/api/StudentOfClass/diemdanhNghiTheoThang?year=${this.nam}&month=${this.thang}`)
+        .then(res => {
+          this.students = res.data;
+
+          // Destroy the existing DataTable instance, if it exists
+          const table = $('#dataTable').DataTable();
+          if (table) {
+            table.destroy();
+          }
+
+          $('#dataTable').DataTable({
+            data: this.students,
+            paging: true,
+            pageLength: 10,
+            columns: [
+              { data: 'tenLop' },
+              { data: 'nam' },
+              { data: 'thang' },
+              { data: 'soLuongNghi' },
+            ]
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    },
         fetchData() {
             axios.get(`https://localhost:7186/api/LopHoc`)
                 .then(res => {

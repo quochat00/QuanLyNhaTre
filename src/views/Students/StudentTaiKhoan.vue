@@ -9,11 +9,12 @@
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
 
-                        <h6 class="m-0 font-weight-bold text-primary">Danh sách lớp học</h6>
+                        <h6 class="m-0 font-weight-bold text-primary">Danh sách tài khoản</h6>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <div>
+
                                 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
                                     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -58,12 +59,11 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Tên lớp</th>
-                                        <th>Chủ nhiệm</th>
+                                        <th>Học sinh</th>
+                                        <th>Tài Khoản</th>
+                                        <th>Mật khẩu</th>
                                         <th>Ghi chú</th>
-                                        <th>Số lượng học sinh</th>
-                                        <th>Thời khóa biểu</th>
-                                        <th>Chi tiết điểm danh</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,6 +94,7 @@ export default {
     name: 'ListTeacher',
     data() {
         return {
+            taikhoans:[],
             classes: [],
             teachers: [],
             formData: {
@@ -111,38 +112,26 @@ export default {
     },
     methods: {
         fetchData() {
-            axios.get(`https://localhost:7186/api/LopHoc`)
+            axios.get(`https://localhost:7186/api/HocSinh/TaiKhoan`)
                 .then(res => {
-                    const classes = res.data;
+                    const taikhoans = res.data;
                     const table = $('#dataTable').DataTable();
                     const vm = this;
                     if (table) {
                         table.destroy();
                     }
                     $('#dataTable').DataTable({
-                        data: classes,
+                        data: taikhoans,
                         paging: true,
                         pageLength: 8,
                         columns: [
-                            { data: 'maLop' },
-                            { data: 'tenLop' },
-                            { data: 'tenGV' },
+                            { data: 'maTK' },
+                            { data: 'tenHS' },
+                            { data: 'tenDN' },
+                            { data: 'matKhau' },
                             { defaultContent:``
                             },
-                            { data: 'soLuongHS' },
-                            {
-                                data: null,
-                                render: function (data, type, row) {
-                                    return `<button type="button" class="btn btn-outline-success btn-view-schedule">Thời khóa biểu</button>`;
-                                }
-                            },
-
-                            {
-                                defaultContent: `
-                                <div>
-                                    <button class="fa fa-eye btn btn-outline-info btn-view-schedule"> Chi tiết </button>
-                                </div>`
-                            },
+                           
                         ],
                         createdRow: function (row, data) {
                             $(row).find('.fa-eye').on('click', function () {

@@ -13,11 +13,11 @@
                             <div>
                                 <div class="row">
                                     <div class="col-lg-9">
-                                        <div class="d-flex justify-content-end mb-3">
+                                        <!-- <div class="d-flex justify-content-end mb-3">
                                             <button type="button" class="btn btn-info" @click="importFile">
                                                 <i class="fa fa-file-word"></i> Nhập File
                                             </button>
-                                        </div>
+                                        </div> -->
                                     </div>
                                     <div style="padding-right:20px;">
                                         <div class="d-flex justify-content-end mb-3">

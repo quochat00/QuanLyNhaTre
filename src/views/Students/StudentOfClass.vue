@@ -92,6 +92,7 @@
                                         <th>Quê Quán</th>
                                         <th>Sửa</th>
                                         <th>Xóa</th>
+                                        <th>Chuyển lớp</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -228,23 +229,126 @@ export default {
                                     <button class="fa fa-trash btn btn-outline-danger"></button>
                                 </div>`
                             },
+                            {
+                                defaultContent: `
+                                <div>
+                                    <button class="fa fa-arrow-right btn btn-outline-success"></button>
+                                </div>`
+                            },
                         ],
                         createdRow: function (row, data) {
                             $(row).find('.fa-pencil-square').on('click', function () {
                                 router.push({ name: 'Student.edit', params: { id: data.maHS } });
                             });
                             $(row).find('.fa-trash').on('click', () => {
-                                if (confirm('Bạn có chắc chắn muốn xóa học sinh này không?')) {
-                                    axios.delete(`https://localhost:7186/api/HocSinh/deleteStudent/${data.maHS}`)
-                                        .then(response => {
-                                            vm.fetchData(response);
-                                            alert('Xóa học sinh thành công!')
-                                        })
-                                        .catch(error => {
-                                            console.error('Error deleting teacher:', error);
-                                        });
+                                Swal.fire({
+                                    title: 'Bạn có chắc chắn muốn xóa học sinh này không?',
+                                    text: "Bạn sẽ không thể khôi phục lại dữ liệu này!",
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#d33',
+                                    confirmButtonText: 'Xóa',
+                                    cancelButtonText: 'Hủy'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        axios.delete(`https://localhost:7186/api/HocSinh/deleteStudent/${data.maHS}`)
+                                            .then(response => {
+                                                vm.fetchData(response);
+                                                Swal.fire(
+                                                    'Đã xóa!',
+                                                    'Học sinh đã được xóa thành công.',
+                                                    'success'
+                                                );
+                                            })
+                                            .catch(error => {
+                                                console.error('Error deleting student:', error);
+                                                Swal.fire(
+                                                    'Lỗi!',
+                                                    'Đã xảy ra lỗi khi xóa học sinh.',
+                                                    'error'
+                                                );
+                                            });
+                                    }
+                                });
+                            });
+                            $(row).find('.fa-arrow-right').on('click', async () => {
+                                try {
+                                    // Fetch current class details
+                                    const { data: currentClass } = await axios.get(`https://localhost:7186/api/HocSinh/getStudent/${data.maHS}`);
+
+                                    // Fetch list of classes
+                                    const classes = await getLopHocList();
+
+                                    // Generate class options for the dropdown
+                                    const classOptions = classes.map(cls => `
+            <option value="${cls.maLop}" ${cls.maLop === currentClass.maLop ? 'selected' : ''}>${cls.tenLop}</option>
+        `).join('');
+
+                                    // Display Swal with class selection
+                                    const { value: selectedClass, isConfirmed } = await Swal.fire({
+                                        title: 'Hãy chọn lớp cần chuyển?',
+                                        html: `<select id="classSelect" class="swal2-select">${classOptions}</select>`,
+                                        icon: 'question',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#3085d6',
+                                        cancelButtonColor: '#d33',
+                                        confirmButtonText: 'Chuyển',
+                                        cancelButtonText: 'Hủy',
+                                        preConfirm: () => {
+                                            const selectElement = document.getElementById('classSelect');
+                                            return selectElement ? selectElement.value : null;
+                                        }
+                                    });
+
+                                    if (isConfirmed && selectedClass) {
+                                        try {
+                                            // chuyển lớp
+                                            await axios.patch(`https://localhost:7186/api/HocSinh/nextClass/${data.maHS}/${selectedClass}`, {
+                                                headers: { 'Content-Type': 'application/json' }
+                                            });
+                                            // Refresh data 
+                                            vm.fetchData();
+
+                                            Swal.fire(
+                                                'Thành công!',
+                                                'Học sinh đã được chuyển lớp thành công.',
+                                                'success'
+                                            );
+                                        } catch (error) {
+                                            console.error('Error transferring student:', error);
+                                            Swal.fire(
+                                                'Lỗi!',
+                                                'Đã xảy ra lỗi khi chuyển lớp cho học sinh.',
+                                                'error'
+                                            );
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('Error fetching class list or current class:', error);
+                                    Swal.fire(
+                                        'Lỗi!',
+                                        'Đã xảy ra lỗi khi lấy danh sách lớp hoặc thông tin lớp hiện tại.',
+                                        'error'
+                                    );
                                 }
                             });
+
+
+
+
+
+                            // Hàm để lấy danh sách các lớp
+                            function getLopHocList() {
+                                return axios.get('https://localhost:7186/api/LopHoc')
+                                    .then(response => {
+                                        return response.data;
+                                    })
+                                    .catch(error => {
+                                        console.error('Error fetching classes:', error);
+                                        throw error;
+                                    });
+                            }
                         }
                     });
 

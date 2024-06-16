@@ -45,11 +45,24 @@
                         <div class="table-responsive">
                             <div>
                                 <div class="d-flex justify-content-end mb-3">
-                                   
+                                    <div style="padding-right: 20px">
+                                        <button type="button" class="btn btn-primary" data-toggle="modal"
+                                            data-target="#exampleModalCenter">
+                                            <i class="fa fa-file-word"></i> Nhập file
+                                        </button>
+                                    </div>
+                                   <div style="padding-right: 20px">
                                     <button type="button" class="btn btn-primary" data-toggle="modal"
                                         data-target="#exampleModalCenter">
                                         <i class="fa fa-plus"></i> Thêm mới
                                     </button>
+                                   </div>
+                                   <div>
+                                    <button type="button" class="btn btn-danger" data-toggle="modal"
+                                        data-target="#exampleModalCenter">
+                                        <i class="fa fa-trash"></i> Xóa
+                                    </button>
+                                   </div>
                                 </div>
                                 <h2 style="text-align: center;">THỜI KHÓA BIỂU</h2>
                                 <br />

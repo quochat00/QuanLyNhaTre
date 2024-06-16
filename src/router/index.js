@@ -23,8 +23,14 @@ import ScheduleUser from '@/views/Users/ScheduleUser.vue'
 import AttendanceUser from '@/views/Users/AttendanceUser.vue'
 import DishUser from '@/views/Users/DishUser.vue'
 import HocPhiUser from '@/views/Users/HocPhiUser.vue'
+import StudentTaiKhoan from '@/views/Students/StudentTaiKhoan.vue'
 
-let isAuthenticated = false;
+const checkAuth = () => {
+  // Lấy token từ localStorage
+  const token = localStorage.getItem('authToken');
+  return !!token;
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -47,8 +53,9 @@ const router = createRouter({
       path: '/studentview',
       name: 'studentview',
       component: StudentView,
+      meta: { requiresAuth: true }
     },
-    { 
+    {
       path: '/thongke',
       name: 'thongke',
       component: Statistical,
@@ -58,119 +65,143 @@ const router = createRouter({
       path: '/studentlist',
       name: 'studentlist',
       component: StudentList,
+      meta: { requiresAuth: true }
     },
     {
       path: '/editStudent/:id',
       name: 'Student.edit',
       component: StudentEdit,
+      meta: { requiresAuth: true }
     },
     {
       path: '/teacher',
       name: 'teacher',
       component: TeacherView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/editTeacher/:id',
       name: 'Teacher.edit',
-      component: TeacherEdit
+      component: TeacherEdit,
+      meta: { requiresAuth: true }
     },
     {
       path: '/classView',
       name: 'classView',
       component: ClassView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/stofclass/:id',
       name: 'Class.stofclass',
       component: StudentOfClass,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/scheduleList/:id',
+      path: '/scheduleList/:id',
       name: 'Schedule.Class',
       component: ScheduleList,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/scheduleDate/:id',
+      path: '/scheduleDate/:id',
       name: 'Schedule.Date',
       component: ScheduleDate,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/hocphi',
+      path: '/hocphi',
       name: 'hocphi',
       component: HocPhiView,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/hocphiClass/:id',
+      path: '/taikhoan',
+      name: 'taikhoan',
+      component: StudentTaiKhoan,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/hocphiClass/:id',
       name: 'HocPhi.Class',
       component: HocPhiClass,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/dishView',
+      path: '/dishView',
       name: 'DishView',
       component: DishView,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/dishClass/:id',
+      path: '/dishClass/:id',
       name: 'Dish.Class',
       component: DishClass,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/attendanceView',
+      path: '/attendanceView',
       name: 'AttendanceView',
       component: AttendanceList,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/attendanceClass/:id',
+      path: '/attendanceClass/:id',
       name: 'Attendance.Class',
       component: AttendanceClass,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/userHome/:id',
+      path: '/userHome/:id',
       name: 'User.Home',
       component: UserHome,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/userClass/:id',
+      path: '/userClass/:id',
       name: 'User.Class',
       component: UserOfClass,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/userSchedule/:id',
+      path: '/userSchedule/:id',
       name: 'User.Schedule',
       component: ScheduleUser,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/userAttendance/:id',
+      path: '/userAttendance/:id',
       name: 'User.Attendance',
       component: AttendanceUser,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/userDish/:id',
+      path: '/userDish/:id',
       name: 'User.Dish',
       component: DishUser,
+      meta: { requiresAuth: true }
     },
     {
-      path:'/userHocPhi/:id',
+      path: '/userHocPhi/:id',
       name: 'User.HocPhi',
-      component:HocPhiUser,
+      component: HocPhiUser,
+      meta: { requiresAuth: true }
     }
-
-
   ]
-  
-})
-// Navigation guard
-// router.beforeEach((to, from, next) => {
-//   if (to.matched.some(record => record.meta.requiresAuth)) {
-//       if (!isAuthenticated) {
-//           alert('Bạn phải đăng nhập');
-//           next('/signin');
-//       } else {
-//           next();
-//       }
-//   } else {
-//       next(); // Always call next()!
-//   }
-// });
+});
 
-export default router
+// Navigation guard
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!checkAuth()) {
+      alert('Bạn phải đăng nhập');
+      next('/signin');
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
+export default router;

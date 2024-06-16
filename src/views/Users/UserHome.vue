@@ -20,6 +20,15 @@
                                             <div class="col-lg-6">
                                                 <div class="form-group">
                                                     <div class="col-lg-8">
+                                                        <label for="anhHS">Ảnh Học Sinh:</label>
+                                                        <br>
+                                                        <img :src="`/src/assets/images/imgstudent/${formData.anhHS}`"
+                                                            alt="Ảnh học sinh" style="width: 100px; height: auto;">
+                                                        <p></p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="col-lg-8">
                                                         <label for="tenPH">Tên Phụ Huynh:</label>
                                                         <input type="text" class="form-control" id="tenPH"
                                                             v-model="formData.tenPH" placeholder="Tên Phụ Huynh"
@@ -50,6 +59,9 @@
                                                             required disabled>
                                                     </div>
                                                 </div>
+                                            
+                                            </div>
+                                            <div class="col-lg-6">
                                                 <div class="form-group">
                                                     <div class="col-lg-8">
                                                         <label for="ngaySinh">Ngày Sinh:</label>
@@ -66,17 +78,6 @@
                                                             <option value="0">Nam</option>
                                                             <option value="1">Nữ</option>
                                                         </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-6">
-                                                <div class="form-group">
-                                                    <div class="col-lg-8">
-                                                        <label for="anhHS">Ảnh Học Sinh:</label>
-                                                        <br>
-                                                        <img :src="`/src/assets/images/imgstudent/${formData.anhHS}`"
-                                                            alt="Ảnh học sinh" style="width: 100px; height: auto;">
-                                                        <p></p>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
@@ -98,8 +99,8 @@
                                                     <div class="col-lg-8">
                                                         <label for="tenLop">Lớp:</label>
                                                         <select class="form-control" id="tenLop"
-                                                            v-model="formData.tenLop" required disabled>
-                                                            <option v-for="clas in classes" :value="clas.tenLop" >{{
+                                                            v-model="formData.maLop" required disabled>
+                                                            <option v-for="clas in classes" :value="clas.maLop" >{{
                                                                 clas.tenLop }}</option>
                                                         </select>
                                                     </div>
@@ -153,7 +154,7 @@ export default {
                 gioiTinh: '0',
                 anhHS: null,
                 queQuan: '',
-                tenLop: '',
+                maLop: '',
                 thoiGianNH: ''
             }
         };

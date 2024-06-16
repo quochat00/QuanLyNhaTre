@@ -3,7 +3,7 @@
         <div id="wrapper">
             <SidebarUser />
             <div class="container-fluid">
-                <Navbar />
+                <NavbarUser />
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
                         <div class="row">
@@ -73,15 +73,15 @@
 </template>
 
 <script>
-import Navbar from '@/components/Navbar.vue';
 import axios from 'axios';
 import router from '@/router/index.js';
 import SidebarUser from '@/components/SidebarUser.vue';
+import NavbarUser from '@/components/NavbarUser.vue';
 
 export default {
     components: {
         SidebarUser,
-        Navbar,
+        NavbarUser,
     },
     name: 'ListStudent',
     data() {
@@ -130,6 +130,39 @@ export default {
                                 }
                             },
                         ],
+                    });
+
+                    students.forEach(student => {
+                        const hanNopDate = new Date(student.hanNop);
+                        const currentDate = new Date();
+                        const timeDiff = hanNopDate - currentDate;
+                        const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+                        if (daysLeft > 0) {
+                            // Hiển thị số ngày còn lại
+                            Swal.fire({
+                                title: 'Hạn nộp học phí',
+                                text: `Học sinh ${student.tenHS} còn ${daysLeft} ngày nữa đến hạn nộp.`,
+                                icon: 'info',
+                                confirmButtonText: 'OK'
+                            });
+                        } else if (daysLeft === 0) {
+                            // Hiển thị nếu hôm nay là ngày cuối
+                            Swal.fire({
+                                title: 'Hạn nộp học phí',
+                                text: `Hôm nay là hạn nộp học phí của học sinh ${student.tenHS}.`,
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            // Hiển thị nếu đã quá hạn
+                            Swal.fire({
+                                title: 'Hạn nộp học phí',
+                                text: `Học sinh ${student.tenHS} đã quá hạn nộp ${Math.abs(daysLeft)} ngày.`,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
                     });
 
                 })

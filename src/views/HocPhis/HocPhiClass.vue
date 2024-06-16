@@ -138,7 +138,7 @@
                                         <th>Học phí</th>
                                         <th>Tổng tiền</th>
                                         <th>Hạn nộp tiền</th>
-                                        <!-- <th>Trạng thái</th> -->
+                                        <th>Trạng thái</th>
                                         <th>Xóa</th>
                                     </tr>
                                 </thead>
@@ -251,12 +251,11 @@ export default {
                                     return date.toLocaleDateString();
                                 }
                             },
-                            // {
-                            //     defaultContent: `
-                            //     <div>
-                            //         <button class="fa fa-pencil-square btn btn-outline-info"></button> 
-                            //     </div>`
-                            // },
+                            {
+                                defaultContent: `
+                                null
+                                `
+                            },
                             {
                                 defaultContent: `
                                 <div>
