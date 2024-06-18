@@ -207,7 +207,8 @@ export default {
                             {
                                 data: function (row) {
                                     const date = new Date(row.ngaySinh);
-                                    return date.toLocaleDateString();
+                                    const formattedDate = date.toISOString().split('T')[0];
+                                    return formattedDate;
                                 }
                             },
                             {
@@ -220,7 +221,8 @@ export default {
                             {
                                 data: function (row) {
                                     const date = new Date(row.thoiGianNH);
-                                    return date.toLocaleDateString();
+                                    const formattedDate = date.toISOString().split('T')[0];
+                                    return formattedDate;
                                 }
                             },
                             {

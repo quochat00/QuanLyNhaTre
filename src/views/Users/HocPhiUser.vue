@@ -42,8 +42,34 @@
                     <div class="card-body">
                         <div class="table-responsive">
                             <div class="row">
-
-
+                                <div class="col-lg-4">
+                                    <div class="form-gruop">
+                                        <div class="col-lg-8">
+                                            <label for="thang">Tháng:</label>
+                                            <input type="text" class="form-control" v-model="thang" placeholder="Tháng"
+                                                required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="form-gruop">
+                                        <div class="col-lg-8">
+                                            <label for="nam">Năm:</label>
+                                            <input type="text" class="form-control" v-model="nam" placeholder="Năm"
+                                                required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-gruop">
+                                    <br />
+                                    <div class="col-lg-11">
+                                        <button class="fa fa-search btn btn-outline-info btn-view-schedule"
+                                            @click="fetchData"> Tìm kiếm</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row">
                             </div>
                             <div>
                             </div>
@@ -57,6 +83,7 @@
                                         <th>Học phí</th>
                                         <th>Tổng tiền</th>
                                         <th>Hạn nộp tiền</th>
+                                        <th>Trạng thái</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -103,7 +130,7 @@ export default {
     methods: {
         fetchData() {
             const maHS = this.$route.params.id; // Lấy giá trị maLop từ đường dẫn
-            axios.get(`https://localhost:7186/api/HocPhi/TienHocHS?maHS=${maHS}`)
+            axios.get(`https://localhost:7186/api/HocPhi/HocPhiByHS?maHS=${maHS}&thang=${this.thang}&nam=${this.nam}`)
                 .then(res => {
                     const students = res.data; // Lấy dữ liệu sinh viên từ phản hồi
                     //console.log(students)
@@ -126,44 +153,63 @@ export default {
                             {
                                 data: function (row) {
                                     const date = new Date(row.hanNop);
-                                    return date.toLocaleDateString();
+                                    const formattedDate = date.toISOString().split('T')[0];
+                                    return formattedDate;
                                 }
                             },
+                            { data: 'trangThai' },
                         ],
                     });
 
                     students.forEach(student => {
-                        const hanNopDate = new Date(student.hanNop);
-                        const currentDate = new Date();
-                        const timeDiff = hanNopDate - currentDate;
-                        const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-                        if (daysLeft > 0) {
-                            // Hiển thị số ngày còn lại
+                        if (student.trangThai === 'Đã đóng') {
+                            // Hiển thị nếu học sinh đã đóng học phí
                             Swal.fire({
-                                title: 'Hạn nộp học phí',
-                                text: `Học sinh ${student.tenHS} còn ${daysLeft} ngày nữa đến hạn nộp.`,
-                                icon: 'info',
-                                confirmButtonText: 'OK'
-                            });
-                        } else if (daysLeft === 0) {
-                            // Hiển thị nếu hôm nay là ngày cuối
-                            Swal.fire({
-                                title: 'Hạn nộp học phí',
-                                text: `Hôm nay là hạn nộp học phí của học sinh ${student.tenHS}.`,
-                                icon: 'warning',
+                                title: 'Học phí',
+                                text: `Học sinh ${student.tenHS} không tồn tại khoản phải nộp.`,
+                                icon: 'success',
                                 confirmButtonText: 'OK'
                             });
                         } else {
-                            // Hiển thị nếu đã quá hạn
-                            Swal.fire({
-                                title: 'Hạn nộp học phí',
-                                text: `Học sinh ${student.tenHS} đã quá hạn nộp ${Math.abs(daysLeft)} ngày.`,
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            });
+                            const hanNopDate = new Date(student.hanNop);
+                            const currentDate = new Date();
+                            const timeDiff = hanNopDate - currentDate;
+                            const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+                            if (daysLeft > 0) {
+                                // Hiển thị số ngày còn lại
+                                Swal.fire({
+                                    title: 'Hạn nộp học phí',
+                                    text: `Học sinh ${student.tenHS} còn ${daysLeft} ngày nữa đến hạn nộp.`,
+                                    icon: 'info',
+                                    confirmButtonText: 'OK'
+                                });
+                            } else if (daysLeft === 0) {
+                                // Hiển thị nếu hôm nay là ngày cuối
+                                Swal.fire({
+                                    title: 'Hạn nộp học phí',
+                                    text: `Hôm nay là hạn nộp học phí của học sinh ${student.tenHS}.`,
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                // Hiển thị nếu đã quá hạn
+                                Swal.fire({
+                                    title: 'Hạn nộp học phí đã qua!',
+                                    text: `Học sinh ${student.tenHS} đã quá hạn nộp học phí ${Math.abs(daysLeft)} ngày. Vui lòng liên hệ giáo viên chủ nhiệm để đóng học phí.`,
+                                    icon: 'error',
+                                    confirmButtonText: 'Đã hiểu',
+                                    customClass: {
+                                        title: 'swal-title',
+                                        text: 'swal-text',
+                                        confirmButton: 'swal-confirm-button'
+                                    }
+                                });
+
+                            }
                         }
                     });
+
 
                 })
                 .catch(error => {

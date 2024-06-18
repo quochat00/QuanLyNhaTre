@@ -24,6 +24,7 @@ import AttendanceUser from '@/views/Users/AttendanceUser.vue'
 import DishUser from '@/views/Users/DishUser.vue'
 import HocPhiUser from '@/views/Users/HocPhiUser.vue'
 import StudentTaiKhoan from '@/views/Students/StudentTaiKhoan.vue'
+import HocPhiEdit from '@/views/HocPhis/HocPhiEdit.vue'
 
 const checkAuth = () => {
   // Lấy token từ localStorage
@@ -113,6 +114,12 @@ const router = createRouter({
       path: '/hocphi',
       name: 'hocphi',
       component: HocPhiView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/editHocPhi/:id',
+      name: 'Edit.HocPhi',
+      component: HocPhiEdit,
       meta: { requiresAuth: true }
     },
     {

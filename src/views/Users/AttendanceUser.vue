@@ -41,12 +41,40 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-gruop">
+                                    <div class="col-lg-8">
+                                        <label for="thang">Tháng:</label>
+                                        <input type="text" class="form-control" v-model="thang" placeholder="Tháng"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-gruop">
+                                    <div class="col-lg-8">
+                                        <label for="nam">Năm:</label>
+                                        <input type="text" class="form-control" v-model="nam" placeholder="Năm"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-gruop">
+                                <br />
+                                <div class="col-lg-11">
+                                    <button class="fa fa-search btn btn-outline-info btn-view-schedule"
+                                        id="searchButton"> Tìm kiếm</button>
+                                </div>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
                             <div class="col-lg-7">
                                 <div class="form-group">
                                     <div class="col-lg-6">
                                         <label for="tenHS">Tên học sinh:</label>
-                                        <input type="text" disabled class="form-control" id="tenHS"
-                                            placeholder="0" required>
+                                        <input type="text" disabled class="form-control" id="tenHS" placeholder="0"
+                                            required>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -102,19 +130,21 @@ export default {
                 maGV: '',
                 soLuongHS: '',
             },
-            soLanDiHoc:0,
-            soLanVang:0,
-            tenHS:'',
+            soLanDiHoc: 0,
+            soLanVang: 0,
+            tenHS: '',
         }
     },
     mounted() {
         this.fetchDataLopHoc();
-        this.fetchDataHS();
+        document.getElementById('searchButton').addEventListener('click', () => {
+            this.fetchDataHS();
+        });
     },
     methods: {
         fetchDataHS() {
             const maHS = this.$route.params.id;
-            axios.get(`https://localhost:7186/api/StudentOfClass/diemdanhHS?maHS=${maHS}`)
+            axios.get(`https://localhost:7186/api/StudentOfClass/diemdanhHS?maHS=${maHS}&month=${this.thang}&year=${this.nam}`)
                 .then(res => {
                     const students = res.data;
 

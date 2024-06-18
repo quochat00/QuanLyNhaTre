@@ -14,7 +14,6 @@
                     <div class="card-body">
                         <div class="table-responsive">
                             <div>
-
                                 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
                                     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -107,8 +106,6 @@ export default {
     },
     mounted() {
         this.fetchData();
-        this.fetchTeachers();
-        this.fetchStudentsByClass();
     },
     methods: {
         fetchData() {
@@ -167,72 +164,8 @@ export default {
                     console.error('Lỗi:', error);
                 });
         },
-        fetchTeachers() {
-            axios.get('https://localhost:7186/api/GiaoVien', {
-            })
-                .then(res => {
-                    this.teachers = res.data;
-                })
-                .catch(error => {
-                    console.error('Lỗi!', error);
-                });
-        },
-        fetchStudentsByClass(maLop) {
-            axios.get(`https://localhost:7186/api/StudentOfClass?maLop=${maLop}`)
-                .then(response => {
-                    this.students = response.data; // Cập nhật mảng students với dữ liệu học sinh mới
-                })
-                .catch(error => {
-                    // Xử lý lỗi nếu có
-                    console.error('Error fetching students by class:', error);
-                });
-        },
 
-        getXepLoai(xepLoai) {
-            switch (xepLoai) {
-                case 0:
-                    return "Giỏi";
-                case 1:
-                    return "Khá";
-            }
-        },
-        submitForm() {
-            let formData = new FormData();
-            formData.append('tenLop', this.formData.tenLop);
-            formData.append('maGV', this.formData.maGV);
-            formData.append('soLuongHS', this.formData.soLuongHS);
-            axios.post('https://localhost:7186/api/LopHoc', formData)
-                .then(response => {
-                    if (response.data) {
-                        const modal = document.getElementById('exampleModalCenter');
-                        modal.classList.remove('show');
-                        modal.setAttribute('aria-modal', 'false');
-                        modal.setAttribute('aria-hidden', 'true');
-                        modal.style.display = 'none';
-                        document.body.classList.remove('modal-open');
-                        const modalBackdrops = document.querySelectorAll('.modal-backdrop');
-                        modalBackdrops.forEach(backdrop => {
-                            backdrop.remove();
-                        });
-                        this.fetchData();
-                    }
-                })
-                .catch(error => {
-                    this.$swal.fire('Lỗi', 'Đã xảy ra lỗi khi thêm lớp học', 'error');
-                });
-
-        },
-        xoaLopHoc(maLop) {
-            axios.delete(`https://localhost:7186/api/LopHoc/${maLop}`)
-                .then(response => {
-                    if (response.data) {
-                        this.fetchData();
-                    }
-                })
-                .catch(error => {
-                    console.error('Không thể xóa lớp học:', error);
-                });
-        },
+        
 
 
     },

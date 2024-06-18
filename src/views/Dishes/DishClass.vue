@@ -56,7 +56,7 @@
                     <div class="card-body">
                         <div class="table-responsive">
                             <div class="row">
-                                <div class="col-lg-9">
+                                <div class="col-lg-11">
                                     <div class="d-flex justify-content-end mb-3">
                                         <input type="file" id="fileInput" ref="fileInput" style="display:none"
                                             @change="handleFileUpload" />
@@ -125,13 +125,13 @@
                                     </div>
 
                                 </div>
-                                <div>
+                                <!-- <div>
                                     <div class="d-flex justify-content-end mb-3">
                                         <button type="button" class="btn btn-success" @click="exportToExcel">
                                             <i class="fa fa-file-excel"></i> Xuất Excel
                                         </button>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                             <div>
                             </div>
@@ -142,9 +142,9 @@
                                         <th>Sáng</th>
                                         <th>Trưa</th>
                                         <th>Chiều</th>
-                                        <th>Điểm danh</th>
-                                        <th>Sửa</th>
-                                        <th>Xóa</th>
+                                        <th>Danh sách học sinh</th>
+                                        <!-- <th>Sửa</th>
+                                        <th>Xóa</th> -->
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -259,7 +259,6 @@ export default {
         async fetchData() {
             const maLop = this.$route.params.id; // Get maLop from route parameters
             const vm = this;
-
             // Fetch dishes data
             const fetchDishesData = async () => {
                 try {
@@ -291,27 +290,27 @@ export default {
                 $(tableId).DataTable({
                     data: data,
                     paging: true,
-                    pageLength: 5,
+                    pageLength: 10,
                     columns: columns,
                     createdRow: (row, data) => {
                         // Edit button click event
-                        $(row).find('.fa-pencil-square').on('click', () => {
-                            vm.$router.push({ name: 'Student.edit', params: { id: data.maHS } });
-                        });
+                        // $(row).find('.fa-pencil-square').on('click', () => {
+                        //     vm.$router.push({ name: 'Student.edit', params: { id: data.maHS } });
+                        // });
 
                         // Delete button click event
-                        $(row).find('.fa-trash').on('click', () => {
-                            if (confirm('Bạn có chắc chắn muốn xóa học sinh này không?')) {
-                                axios.delete(`https://localhost:7186/api/HocSinh/deleteStudent/${data.maHS}`)
-                                    .then(() => {
-                                        vm.fetchData();
-                                        alert('Xóa học sinh thành công!');
-                                    })
-                                    .catch(error => {
-                                        console.error('Error deleting student:', error);
-                                    });
-                            }
-                        });
+                        // $(row).find('.fa-trash').on('click', () => {
+                        //     if (confirm('Bạn có chắc chắn muốn xóa học sinh này không?')) {
+                        //         axios.delete(`https://localhost:7186/api/HocSinh/deleteStudent/${data.maHS}`)
+                        //             .then(() => {
+                        //                 vm.fetchData();
+                        //                 alert('Xóa học sinh thành công!');
+                        //             })
+                        //             .catch(error => {
+                        //                 console.error('Error deleting student:', error);
+                        //             });
+                        //     }
+                        // });
 
                         // Attendance button click event
                         $(row).find('.btn-info').on('click', async () => {
@@ -428,14 +427,14 @@ export default {
                     { data: 'caTrua' },
                     { data: 'caChieu' },
                     {
-                        defaultContent: `<div><button type="button" class="btn btn-info attendance-button"><i class="fa fa-edit"></i> Điểm Danh</button></div>`
+                        defaultContent: `<div><button type="button" class="btn btn-info attendance-button"><i class="fa fa-edit"></i> Chi tiết</button></div>`
                     },
-                    {
-                        defaultContent: `<div><button class="fa fa-pencil-square btn btn-outline-info"></button></div>`
-                    },
-                    {
-                        defaultContent: `<div><button class="fa fa-trash btn btn-outline-danger"></button></div>`
-                    }
+                    // {
+                    //     defaultContent: `<div><button class="fa fa-pencil-square btn btn-outline-info"></button></div>`
+                    // },
+                    // {
+                    //     defaultContent: `<div><button class="fa fa-trash btn btn-outline-danger"></button></div>`
+                    // }
                 ];
 
                 initializeDataTable(dishes, columns, '#dataTable');
@@ -542,13 +541,45 @@ export default {
 
             try {
                 const response = await axios.post('https://localhost:7186/api/ThucDon/ImportThucDon', formTDdata);
-                this.fetchData();
-                alert('File imported successfully: ' + response.data);
+                if (response.status === 200) {
+                    this.fetchData();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'File imported successfully'
+                    });
+                    this.resetForm();  // Reset the form fields and file input
+                } else if (response.status === 409) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Conflict',
+                        text: response.data
+                    });
+                }
             } catch (error) {
                 console.error('Error importing file:', error);
-                alert('Failed to import file');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to import file'
+                });
+            }
+        },
+
+        resetForm() {
+            this.formTDdata = {
+                ngay: '',
+                maBuoi: '',
+                monAn: '',
+                gia: '',
+                maLop: ''
+            };
+            const fileInput = document.querySelector('input[type="file"]');
+            if (fileInput) {
+                fileInput.value = '';
             }
         }
+
 
 
     },

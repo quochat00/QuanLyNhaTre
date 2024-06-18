@@ -54,7 +54,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="item in dataThucDon" :key="item.ngay">
-                                    <td>{{ item.ngay }}</td>
+                                    <td>{{ getDate(item.ngay) }}</td>
                                     <td>{{ item.caSang }}</td>
                                     <td>{{ item.caTrua }}</td>
                                     <td>{{ item.caChieu }}</td>
@@ -84,6 +84,7 @@ export default {
     data() {
         return {
             classes: [],
+            dataThucDon:[],
             dataLopHoc: {
                 tenLop: '',
                 tenGV: '',
@@ -114,6 +115,9 @@ export default {
                     this.dataLopHoc = res.data[0];
                     console.log(this.dataLopHoc);
                 });
+        },
+        getDate(ngayAn) {
+            return ngayAn.split('T')[0];
         },
     },
 }

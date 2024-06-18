@@ -157,11 +157,11 @@ export default {
     mounted() {
         this.fetchData();
         this.fetchDataLopHoc();
-        this.fetchDataHS();
+        // this.fetchDataHS();
         //document.getElementById('searchButton').addEventListener('click', this.fetchDataHS());
         document.getElementById('searchButton').addEventListener('click', () => {
-        this.fetchDataHS();
-    });
+            this.fetchDataHS();
+        });
     },
     methods: {
         fetchData() {
@@ -192,7 +192,8 @@ export default {
                             {
                                 data: function (row) {
                                     const date = new Date(row.ngaySinh);
-                                    return date.toLocaleDateString();
+                                    const formattedDate = date.toISOString().split('T')[0];
+                                    return formattedDate;
                                 }
                             },
                             {
@@ -267,7 +268,11 @@ export default {
                                 { data: 'maHS', title: 'Mã HS' },
                                 { data: 'tenHS', title: 'Tên HS' },
                                 {
-                                    data: row => new Date(row.ngayDiemDanh).toLocaleDateString(),
+                                    data: function (row) {
+                                        const date = new Date(row.ngayDiemDanh);
+                                        const formattedDate = date.toISOString().split('T')[0];
+                                        return formattedDate;
+                                    },
                                     title: 'Ngày đi học'
                                 },
                                 {
@@ -307,20 +312,46 @@ export default {
 
                         $('#updateButton').on('click', () => {
                             if (changedData.length > 0) {
-                                axios.post(`https://localhost:7186/api/StudentOfClass/updateDiemDanh`, changedData)
-                                    .then(response => {
-                                        alert("Cập nhật điểm danh thành công!");
-                                        changedData = [];
-                                        window.location.reload();
-                                    })
-                                    .catch(error => {
-                                        alert("Cập nhật điểm danh thất bại!");
-                                        console.error('Error while saving attendance:', error);
-                                    });
+                                Swal.fire({
+                                    title: 'Xác nhận',
+                                    text: "Bạn có chắc chắn muốn cập nhật điểm danh không?",
+                                    icon: 'question',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#d33',
+                                    confirmButtonText: 'Có, cập nhật!',
+                                    cancelButtonText: 'Không, hủy!'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        axios.post(`https://localhost:7186/api/StudentOfClass/updateDiemDanh`, changedData)
+                                            .then(response => {
+                                                Swal.fire(
+                                                    'Thành công!',
+                                                    'Cập nhật điểm danh thành công!',
+                                                    'success'
+                                                );
+                                                changedData = [];
+                                                this.fetchDataHS();
+                                            })
+                                            .catch(error => {
+                                                Swal.fire(
+                                                    'Thất bại!',
+                                                    'Cập nhật điểm danh thất bại!',
+                                                    'error'
+                                                );
+                                                console.error('Error while saving attendance:', error);
+                                            });
+                                    }
+                                });
                             } else {
-                                alert("Không có thay đổi nào để cập nhật!");
+                                Swal.fire(
+                                    'Không có thay đổi!',
+                                    'Không có thay đổi nào để cập nhật!',
+                                    'info'
+                                );
                             }
                         });
+
 
                         document.getElementById('ngayHoc').value = formattedDate;
                     });

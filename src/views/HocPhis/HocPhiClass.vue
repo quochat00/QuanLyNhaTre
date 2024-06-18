@@ -53,6 +53,35 @@
                     <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary">Danh sách lớp học</h6>
                     </div>
+                    <div class="card-header py-3">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="form-gruop">
+                                    <div class="col-lg-8">
+                                        <label for="thang">Tháng:</label>
+                                        <input type="text" class="form-control" v-model="thang" placeholder="Tháng"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-gruop">
+                                    <div class="col-lg-8">
+                                        <label for="nam">Năm:</label>
+                                        <input type="text" class="form-control" v-model="nam" placeholder="Năm"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-gruop">
+                                <br />
+                                <div class="col-lg-11">
+                                    <button class="fa fa-search btn btn-outline-info btn-view-schedule"
+                                        @click="fetchData"> Tìm kiếm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <div class="row">
@@ -124,7 +153,6 @@
                                         <i class="fa fa-edit"></i> Điểm Danh
                                     </button>
                                 </div> -->
-
                             </div>
                             <div>
                             </div>
@@ -139,7 +167,7 @@
                                         <th>Tổng tiền</th>
                                         <th>Hạn nộp tiền</th>
                                         <th>Trạng thái</th>
-                                        <th>Xóa</th>
+                                        <th>Cập nhật</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -181,7 +209,7 @@ import Sidebar from '@/components/Sidebar.vue';
 import Navbar from '@/components/Navbar.vue';
 import axios from 'axios';
 import router from '@/router/index.js';
-
+import fileSaver from 'file-saver';
 export default {
     components: {
         Sidebar: Sidebar,
@@ -225,10 +253,10 @@ export default {
     methods: {
         fetchData() {
             const maLop = this.$route.params.id; // Lấy giá trị maLop từ đường dẫn
-            axios.get(`https://localhost:7186/api/HocPhi?maLop=${maLop}`)
+            axios.get(`https://localhost:7186/api/HocPhi?maLop=${maLop}&thang=${this.thang}&nam=${this.nam}`)
                 .then(res => {
                     const students = res.data; // Lấy dữ liệu sinh viên từ phản hồi
-                    //console.log(students)
+                    console.log(students)
                     const table = $('#dataTable').DataTable();
                     const vm = this;
                     if (table) {
@@ -251,33 +279,17 @@ export default {
                                     return date.toLocaleDateString();
                                 }
                             },
-                            {
-                                defaultContent: `
-                                null
-                                `
-                            },
+                            { data: 'trangThai' },
                             {
                                 defaultContent: `
                                 <div>
-                                    <button class="fa fa-trash btn btn-outline-danger"></button>
+                                    <button class="fa fa-edit btn btn-outline-success"></button>
                                 </div>`
                             },
                         ],
                         createdRow: function (row, data) {
-                            // $(row).find('.fa-pencil-square').on('click', function () {
-                            //     router.push({ name: 'Student.edit', params: { id: data.maHS } });
-                            // });
-                            $(row).find('.fa-trash').on('click', () => {
-                                if (confirm('Bạn có chắc chắn muốn xóa học sinh này không?')) {
-                                    axios.delete(`https://localhost:7186/api/HocSinh/deleteStudent/${data.maHS}`)
-                                        .then(response => {
-                                            vm.fetchData(response);
-                                            alert('Xóa học sinh thành công!')
-                                        })
-                                        .catch(error => {
-                                            console.error('Error deleting teacher:', error);
-                                        });
-                                }
+                            $(row).find('.fa-edit').on('click', function () {
+                                router.push({ name: 'Edit.HocPhi', params: { id: data.maHS } });
                             });
                         }
                     });
@@ -342,7 +354,36 @@ export default {
                 });
         },
 
+        async exportToExcel() {
+    try {
+        const maLop = this.$route.params.id;
+        const response = await axios({
+            method: 'get',
+            url: `https://localhost:7186/api/HocPhi/ExportExcelDSHocPhi`,
+            params: { maLop, thang: this.thang, nam: this.nam },
+            responseType: 'blob'
+        });
 
-    },
+        const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const filename = `DanhSachHocPhiTheoLop_${maLop}_${this.thang}_${this.nam}.xlsx`;
+
+        fileSaver.saveAs(blob, filename);
+
+        Swal.fire({
+            title: 'Xuất thành công!',
+            text: 'Danh sách học phí đã được xuất ra file Excel.',
+            icon: 'success'
+        });
+    } catch (error) {
+        console.error('There was a problem with the export operation:', error);
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Đã xảy ra lỗi khi xuất dữ liệu.',
+            icon: 'error'
+        });
+    }
+}
+
+    }
 };
 </script>

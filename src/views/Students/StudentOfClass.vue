@@ -177,8 +177,8 @@ export default {
     },
     mounted() {
         this.fetchData();
-        this.fetchDataLopHoc();
         this.fetchDataHS();
+        this.fetchDataLopHoc();
     },
     methods: {
         fetchData() {
@@ -252,9 +252,10 @@ export default {
                                     cancelButtonText: 'Hủy'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
-                                        axios.delete(`https://localhost:7186/api/HocSinh/deleteStudent/${data.maHS}`)
+                                        axios.delete(`https://localhost:7186/api/HocSinh/deleteStudentFromClass/${data.maHS}`)
                                             .then(response => {
                                                 vm.fetchData(response);
+                                                vm.fetchDataLopHoc(response);
                                                 Swal.fire(
                                                     'Đã xóa!',
                                                     'Học sinh đã được xóa thành công.',
@@ -309,6 +310,7 @@ export default {
                                             });
                                             // Refresh data 
                                             vm.fetchData();
+                                            vm.fetchDataLopHoc();
 
                                             Swal.fire(
                                                 'Thành công!',
@@ -333,11 +335,6 @@ export default {
                                     );
                                 }
                             });
-
-
-
-
-
                             // Hàm để lấy danh sách các lớp
                             function getLopHocList() {
                                 return axios.get('https://localhost:7186/api/LopHoc')
@@ -359,13 +356,15 @@ export default {
         },
         fetchDataHS() {
             const maLop = this.$route.params.id;
-            let ngayDiemDanh = new Date();
-            var formattedDate = ngayDiemDanh.toISOString();
+            const ngayDiemDanh = new Date();
+            const formattedDate = ngayDiemDanh.toISOString();
 
             axios.get(`https://localhost:7186/api/StudentOfClass/themdiemdanh?maLop=${maLop}&ngayDiemDanh=${formattedDate}`)
                 .then(res => {
                     const students = res.data;
                     console.log(students);
+
+                    // Khi document đã sẵn sàng, khởi tạo DataTable
                     $(document).ready(function () {
                         $('#attendanceButton').on('click', function () {
                             $('#tableContainer').show();
@@ -373,37 +372,45 @@ export default {
                             $('#studentTable').DataTable({
                                 data: students,
                                 paging: true,
-                                pageLength: 10,
+                                pageLength: 9,
                                 columns: [
                                     { data: 'maHS', title: 'Mã HS' },
                                     { data: 'tenHS', title: 'Tên HS' },
                                     {
-                                        data: function (row) {
-                                            const date = new Date(row.ngayDiemDanh);
+                                        data: 'ngayDiemDanh',
+                                        render: function (data) {
+                                            const date = new Date(data);
                                             return date.toLocaleDateString();
                                         },
                                         title: 'Ngày đi học'
                                     },
                                     {
                                         data: 'trangThai',
-                                        render: function (data, type, row) {
+                                        render: function (data) {
                                             const checked = data ? 'checked' : '';
                                             return `<input type="checkbox" class="attendanceCheckbox" ${checked}>`;
                                         },
                                         orderable: false,
-                                        title: 'Trạng thái'
-                                    }
+                                        title: '<input type="button" class="btn btn-outline-info" id="selectAll" value="Trạng Thái">'
+                                    },
                                 ],
-                                destroy: true
+                                destroy: true // Xóa table cũ trước khi khởi tạo lại
+                            });
+
+                            // Đăng ký sự kiện click cho nút "Select All"
+                            $('#selectAll').on('click', function () {
+                                const allChecked = $('.attendanceCheckbox').prop('checked');
+                                $('.attendanceCheckbox').prop('checked', !allChecked);
                             });
                         });
 
+                        // Lưu dữ liệu khi nhấn nút Save
                         $('#saveButton').on('click', function () {
                             let data = [];
                             $('#studentTable tbody tr').each(function () {
-                                var maHS = $(this).find('td:eq(0)').text();
-                                var isChecked = $(this).find('.attendanceCheckbox').prop('checked');
-                                const dateInput = document.getElementById('date').value;
+                                const maHS = $(this).find('td:eq(0)').text();
+                                const isChecked = $(this).find('.attendanceCheckbox').prop('checked');
+                                const dateInput = $('#date').val();
                                 const ngay = new Date(dateInput);
                                 const formatDate = ngay.toISOString();
                                 data.push({
@@ -423,13 +430,13 @@ export default {
                                     console.error('Error while saving attendance:', error);
                                 });
                         });
-
                     });
                 })
                 .catch(error => {
                     console.error('Error fetching students:', error);
                 });
         },
+
 
         fetchDataLopHoc() {
             const maLop = this.$route.params.id;
@@ -467,13 +474,54 @@ export default {
 
             try {
                 const response = await axios.post('https://localhost:7186/api/HocSinh/ImportHocSinh', formHSdata);
-                this.fetchData();
-                alert('File imported successfully: ' + response.data);
+                if (response.status === 200) {
+                    this.fetchData();
+                    this.fetchDataLopHoc();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'File Imported',
+                        text: 'File imported successfully: ' + response.data
+                    });
+                    this.resetForm();  // Reset the form fields and reinitialize state
+                } else if (response.status === 409) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Import Failed',
+                        text: 'Failed to import file: ' + response.data
+                    });
+                }
             } catch (error) {
                 console.error('Error importing file:', error);
-                alert('Failed to import file');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to import file'
+                });
             }
         },
+
+        resetForm() {
+            this.formHSdata = {
+                tenPH: '',
+                diaChi: '',
+                sdt: '',
+                email: '',
+                tenHS: '',
+                ngaySinh: '',
+                gioiTinh: '',
+                anhHS: '',
+                queQuan: '',
+                maLop: '',
+                thoiGianNH: ''
+            };
+            // Optionally clear the file input
+            const fileInput = document.querySelector('input[type="file"]');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        },
+
+
         async exportToExcel() {
             const maLop = this.$route.params.id; // Ensure this is the correct way to access the route parameter
             try {

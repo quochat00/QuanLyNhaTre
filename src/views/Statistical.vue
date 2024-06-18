@@ -58,7 +58,7 @@
                                             <div class="row no-gutters align-items-center">
                                                 <div class="col-auto">
                                                     <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{
-                                                        totalClasses }}</div>
+                                                totalClasses }}</div>
                                                 </div>
                                                 <div class="col">
                                                     <div class="progress progress-sm mr-2">
@@ -79,30 +79,66 @@
                     </div>
 
                     <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Thống kê học sinh nghỉ học</h6>
+                        </div>
+                        <div class="card-header py-3">
+                           
+                                <div class="row">
+                                    <div class="col-lg-4">
+                                        <div class="form-gruop">
+                                            <div class="col-lg-8">
+                                                <label for="thang">Tháng:</label>
+                                                <input type="text" class="form-control" v-model="thang"
+                                                    placeholder="Tháng" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div class="form-gruop">
+                                            <div class="col-lg-8">
+                                                <label for="nam">Năm:</label>
+                                                <input type="text" class="form-control" v-model="nam" placeholder="Năm"
+                                                    required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-gruop">
+                                        <br />
+                                        <div class="col-lg-11">
+                                            <button class="fa fa-search btn btn-outline-info btn-view-schedule"
+                                                @click="fetchDataTK"> Tìm kiếm</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         <div class="card shadow mb-4">
-                        <div class="card-body">
-                        <input type="text" v-model="thang" placeholder="Tháng">
-                        <input type="text" v-model="nam" placeholder="Năm">
-                        <button @click="fetchDataTK">Tìm kiếm</button>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Tên lớp</th>
+                                                <th>Năm</th>
+                                                <th>Tháng</th>
+                                                <th>Số lượng học sinh nghỉ</th>
+                                                <!-- <th>Chi tiết</th> -->
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <canvas id="myChart"></canvas>
+
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                <th>Tên lớp</th>
-                                <th>Năm</th>
-                                <th>Tháng</th>
-                                <th>Số lượng học sinh nghỉ</th>
-                                <!-- <th>Chi tiết</th> -->
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                            </table>
-                        </div>
-                        </div>
-                    </div>
 
                         <div class="card-header py-3">
                             <h6 class="m-0 font-weight-bold text-primary">Giới thiệu</h6>
@@ -165,32 +201,64 @@ export default {
     },
     methods: {
         fetchDataTK() {
-      axios.get(`https://localhost:7186/api/StudentOfClass/diemdanhNghiTheoThang?year=${this.nam}&month=${this.thang}`)
-        .then(res => {
-          this.students = res.data;
+            axios.get(`https://localhost:7186/api/StudentOfClass/diemdanhNghiTheoThang?year=${this.nam}&month=${this.thang}`)
+                .then(res => {
+                    this.students = res.data;
 
-          // Destroy the existing DataTable instance, if it exists
-          const table = $('#dataTable').DataTable();
-          if (table) {
-            table.destroy();
-          }
+                    // Destroy the existing DataTable instance, if it exists
+                    const table = $('#dataTable').DataTable();
+                    if (table) {
+                        table.destroy();
+                    }
 
-          $('#dataTable').DataTable({
-            data: this.students,
-            paging: true,
-            pageLength: 10,
-            columns: [
-              { data: 'tenLop' },
-              { data: 'nam' },
-              { data: 'thang' },
-              { data: 'soLuongNghi' },
-            ]
-          });
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
-    },
+                    $('#dataTable').DataTable({
+                        data: this.students,
+                        paging: true,
+                        pageLength: 10,
+                        columns: [
+                            { data: 'tenLop' },
+                            { data: 'nam' },
+                            { data: 'thang' },
+                            { data: 'soLuongNghi' },
+                        ]
+                    });
+
+                    // Vẽ biểu đồ sau khi có dữ liệu
+                    this.renderChart();
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        },
+
+        renderChart() {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const labels = this.students.map(student => student.tenLop);
+            const data = this.students.map(student => student.soLuongNghi);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số học sinh nghỉ',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',  // Đậm hơn
+                        borderColor: 'rgba(54, 162, 235, 1)',        // Đậm hơn
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        },
+
         fetchData() {
             axios.get(`https://localhost:7186/api/LopHoc`)
                 .then(res => {

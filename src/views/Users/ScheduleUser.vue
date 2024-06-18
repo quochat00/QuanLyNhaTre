@@ -87,6 +87,7 @@ export default {
     data() {
         return {
             classes: [],
+            dataLichHoc: [],
             dataLopHoc: {
                 tenLop: '',
                 tenGV: '',
@@ -95,8 +96,9 @@ export default {
         }
     },
     mounted() {
-        this.fetchDataLichHoc();
         this.fetchDataLopHoc();
+        this.fetchDataLichHoc();
+    
     },
     methods: {
         fetchDataLichHoc() {

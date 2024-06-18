@@ -45,24 +45,25 @@
                         <div class="table-responsive">
                             <div>
                                 <div class="d-flex justify-content-end mb-3">
+                                    <div class="d-flex justify-content-end mb-3" style="padding-right: 20px">
+                                        <input type="file" id="fileInput" ref="fileInput" style="display:none"
+                                            @change="handleFileUpload" />
+                                        <button type="button" class="btn btn-info" @click="triggerFileInput">
+                                            <i class="fa fa-file-word"></i> Nhập File
+                                        </button>
+                                    </div>
                                     <div style="padding-right: 20px">
                                         <button type="button" class="btn btn-primary" data-toggle="modal"
                                             data-target="#exampleModalCenter">
-                                            <i class="fa fa-file-word"></i> Nhập file
+                                            <i class="fa fa-plus"></i> Thêm mới
                                         </button>
                                     </div>
-                                   <div style="padding-right: 20px">
-                                    <button type="button" class="btn btn-primary" data-toggle="modal"
-                                        data-target="#exampleModalCenter">
-                                        <i class="fa fa-plus"></i> Thêm mới
-                                    </button>
-                                   </div>
-                                   <div>
-                                    <button type="button" class="btn btn-danger" data-toggle="modal"
-                                        data-target="#exampleModalCenter">
-                                        <i class="fa fa-trash"></i> Xóa
-                                    </button>
-                                   </div>
+                                    <div>
+                                        <button type="button" class="btn btn-danger" data-toggle="modal"
+                                            @click="deleteSchedule">
+                                            <i class="fa fa-trash"></i> Xóa
+                                        </button>
+                                    </div>
                                 </div>
                                 <h2 style="text-align: center;">THỜI KHÓA BIỂU</h2>
                                 <br />
@@ -234,6 +235,48 @@ export default {
                     console.log(this.dataLopHoc);
                 });
         },
+        async deleteSchedule() {
+            try {
+                const maLop = this.$route.params.id;
+
+                const result = await Swal.fire({
+                    title: 'Bạn có chắc chắn muốn xóa?',
+                    text: "Bạn sẽ không thể khôi phục lại lịch học này!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Có, xóa nó!',
+                    cancelButtonText: 'Không, hủy bỏ!'
+                });
+
+                if (result.isConfirmed) {
+                    const response = await axios.delete(`https://localhost:7186/api/LichHoc/delete/${maLop}`);
+                    if (response.status === 200) {
+                        Swal.fire(
+                            'Đã xóa!',
+                            'Lịch học đã được xóa thành công.',
+                            'success'
+                        );
+                        this.fetchDataLichHoc(); // Refresh data after deletion
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Không thể xóa lịch học. Vui lòng thử lại.'
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting schedule:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không thể xóa lịch học. Vui lòng thử lại sau.'
+                });
+            }
+        },
+
         submitForm() {
             let formData = new FormData();
             formData.append('tenLH', this.formData.tenLH);
@@ -261,7 +304,86 @@ export default {
                     console.error('Error adding schedule:', error);
                     alert("Đã xảy ra lỗi khi thêm lịch học!");
                 });
+        },
+        triggerFileInput() {
+            this.$refs.fileInput.click();
+        },
+        handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.uploadFile(file);
+            }
+        },
+        async uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('TenMH', this.formData.tenMH);
+            formData.append('Ca', this.formData.ca);
+            formData.append('MaLop', this.formData.maLop);
+            formData.append('MaNTT', this.formData.maNTT);
+
+            try {
+                const response = await axios.post('https://localhost:7186/api/LichHoc/import', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                if (response.status === 200) {
+                    this.fetchDataLichHoc(); // Refresh data
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'File imported successfully'
+                    });
+
+                    // Reset the form fields and file input
+                    this.resetForm();
+
+                    // Optionally, disable the button or update its text to indicate completion
+                    const uploadButton = document.getElementById('uploadButton');
+                    if (uploadButton) {
+                        uploadButton.disabled = false; // Enable button again, if disabled
+                        uploadButton.textContent = 'Import File'; // Reset button text
+                    }
+                } else if (response.status === 409) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Conflict',
+                        text: response.data
+                    });
+                }
+            } catch (error) {
+                console.error('Error importing file:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to import file'
+                });
+
+                // Optionally, enable the button again if an error occurs
+                const uploadButton = document.getElementById('uploadButton');
+                if (uploadButton) {
+                    uploadButton.disabled = false;
+                    uploadButton.textContent = 'Import File'; // Reset button text
+                }
+            }
+        },
+
+        // Reset form fields
+        resetForm() {
+            this.formData.tenMH = '';
+            this.formData.ca = '';
+            this.formData.maLop = '';
+            this.formData.maNTT = '';
+            // Reset file input
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.value = ''; // Clear file input
+            }
         }
+
 
     },
 }
